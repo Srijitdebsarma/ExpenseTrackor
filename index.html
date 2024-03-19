@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+    <style>
+        .button-group {
+            display: inline-block;
+        }
+        .button-group button {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <form id="expenseForm" method="GET" action="">
+        Choose Expense amount: <input type="number" name="amount_spent" id="amount_spent" placeholder="Write down Your expense">
+        Description: <input type="text" name="description" id="description" placeholder="Write down the description">
+        Choose a category:
+        <select id="category">
+            <option value="Fuel" selected>Fuel</option>
+            <option value="Movie">Movie</option>
+            <option value="Shopping">Shopping</option>
+            <option value="Others">Others</option>
+        </select>
+        <button type="button" onclick="addExpense()">Add Expense</button>
+    </form>
+
+    <div id="expenses"></div>
+
+    <script>
+        // Load existing expenses from local storage
+        window.onload = function() {
+            loadExpenses();
+        };
+
+        function addExpense() {
+            let amount_spent = document.getElementById("amount_spent").value;
+            let description = document.getElementById("description").value;
+            let category = document.getElementById("category").value;
+
+            // Object to store the form data
+            var expense = {
+                amount_spent: amount_spent,
+                description: description,
+                category: category
+            };
+
+            // Save expense to local storage
+            let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+            expenses.push(expense);
+            localStorage.setItem('expenses', JSON.stringify(expenses));
+
+            // Update the display
+            displayExpense(expense, expenses.length - 1);
+        }
+
+        function loadExpenses() {
+            let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+            expenses.forEach((expense, index) => {
+                displayExpense(expense, index);
+            });
+        }
+
+        function displayExpense(expense, index) {
+            let p = document.createElement('p');
+            p.innerHTML = `<p>You spent ${expense.amount_spent} in ${expense.category}  <button class="delete-btn" onclick="deleteExpense(${index})">Delete</button> <button class="edit-btn" onclick="editExpense(${index})">Edit</button> </p>`;
+            document.getElementById('expenses').appendChild(p);
+        }
+
+        function deleteExpense(index) {
+            let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+            expenses.splice(index, 1);
+            localStorage.setItem('expenses', JSON.stringify(expenses));
+            // Clear the displayed expenses and reload
+            document.getElementById('expenses').innerHTML = '';
+            loadExpenses();
+        }
+
+        function editExpense(index) {
+            let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+            let expenseToEdit = expenses[index];
+            
+            // Prompt the user to enter the new amount spent
+            let newAmount = prompt("Enter the new amount spent:", expenseToEdit.amount_spent);
+            
+            // Validate if a new amount is provided and it's a valid number
+            if (newAmount !== null && !isNaN(parseFloat(newAmount))) {
+                expenseToEdit.amount_spent = parseFloat(newAmount);
+                
+                // Update the expense in local storage
+                expenses[index] = expenseToEdit;
+                localStorage.setItem('expenses', JSON.stringify(expenses));
+
+                // Clear the displayed expenses and reload
+                document.getElementById('expenses').innerHTML = '';
+                loadExpenses();
+            } else {
+                alert("Invalid amount. Please enter a valid number.");
+            }
+        }
+    </script>
+</body>
+</html>
